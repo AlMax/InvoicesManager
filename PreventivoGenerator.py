@@ -1,11 +1,10 @@
 import Order;
-from Utils import FileSystem;
+import AlmaxGraphics.PdfManager as PM;
 
 def main():
     client_info = {
         "name": "Ali Srls"
     };
-Utils.
     orders = [
         Order('fbewkjfbwebfjewbfkjewbfkewfewfvjewbfjwebfjkewjfbewfjwebjfwejfjwebfjewbfjwefwebfwefweeffwe', 2.6, 34.5),
         Order('ciao', 2.6, 34090.5),
@@ -14,7 +13,7 @@ Utils.
         Order('fbewkjfbwebfjewbfkjewbfkewfewfvjewbfjwebfjkewjfbewfjwebjfwejfjwebfjewbfjwefwebfwefweeffwe', 2.6, 34.5)
     ];
 
-    PdfGenerator(client_info, orders);
+    PM.PdfGenerator(client_info, orders);
 
 if __name__ == "__main__":
     main();
