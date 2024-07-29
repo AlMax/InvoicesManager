@@ -1,4 +1,4 @@
-almax_common==1.0.7.dev20240729181715
+almax_common==1.0.7.dev20240729211022
 Babel==2.15.0
 chardet==5.2.0
 codicefiscale==0.9
