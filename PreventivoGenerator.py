@@ -4,14 +4,15 @@ import AlmaxGraphics.FrameManager as FM;
 import tkinter as TK;
 import json;
 from AlmaxLogs import LoggerService;
-import sys;
+import sys,os,platform;
+from tkinter import messagebox
 
 name = "PreventivoGenerator";
 window = FM.Window(name);
 
 orders = [];
 total = 0.00;
-totalString = TK.StringVar(value="0.00€");
+totalString = TK.StringVar(value="0,00€");
 log = LoggerService(
     programNameLogger=name,
     genericLogFileName="Log.log"
@@ -20,19 +21,36 @@ log.Start();
 
 def CalculateTotal(order: Order):
     global total;
-    total = float(f"{(float(total) + float(order.Total.replace(",", ""))):.2f}");
-    totalString.set(f"{total}€");
+    total = float(f"{(total + float(order.Total.replace(".","").replace(",", ".")))}");
+    totalString.set(f"{formatFloat(total)}€")
+
+def formatFloat(number):
+    # Convert number to string and split into integer and decimal parts
+    integer_part, decimal_part = f"{number:.2f}".split('.')
+    # Add thousands separator
+    integer_part_with_thousands = '{:,}'.format(int(integer_part)).replace(',', '.')
+    # Combine integer and decimal parts with comma as decimal separator
+    formatted_number = f"{integer_part_with_thousands},{decimal_part}"
+    return formatted_number;
 
 def AssignCommand(Button: TK.Button, index):
     match (index):
         case 0:
+            try:
+                q = float(quantity.get("1.0", TK.END).strip().replace(",", "."))
+                p = float(price.get("1.0", TK.END).strip().replace(",", "."))
+            except:
+                messagebox.showerror(
+                    "Error", "Quantità e Prezzo accettano solo numeri!"
+                )
+                return
             global window
             global orders
 
             order = Order(
                 productName.get("1.0", TK.END).strip(),
-                float(quantity.get("1.0", TK.END).strip().replace(",", ".")),
-                float(price.get("1.0", TK.END).strip().replace(",", ".")),
+                q,
+                p,
             )
             log.AddLog("Aggiunto un ordine")
             log.AddLog(f"\t{order.ToDict()}\n")
@@ -48,9 +66,15 @@ def AssignCommand(Button: TK.Button, index):
             price.delete("1.0", TK.END)
 
         case 1:
-            with open(f"{log.LogPath()}/Ordini.txt", 'r') as file:
-                data = json.load(file);
-                orders = data;
+            Button.config(text=f"Attendere..", state=TK.DISABLED)
+            try:
+                with open(f"{log.LogPath()}/Ordini.txt", 'r') as file:
+                    data = json.load(file);
+                    orders = data;
+            except:
+                messagebox.showerror("Error", "Il file non è generabile!");
+                Button.config(text=f"Genera PDF", state=TK.NORMAL);
+                return;
             newOrders = [];
             global total;
             total = 0.00;
@@ -60,12 +84,31 @@ def AssignCommand(Button: TK.Button, index):
                 CalculateTotal(newOrder);
                 newOrders.append(newOrder);
             orders = newOrders;
+            totaleIva = f"{formatFloat(float(total * 0.22))}"
+            totaleFinale = f"{formatFloat(float(float(total * 0.22) + total))}"
             PdfName = PM.GeneratePdf(
                 clientInfo.get("1.0", TK.END).strip(),
                 [order.ToDict() for order in orders],
-            );
+                [
+                    {"text": "TOTALE SENZA IVA", "value": f"{formatFloat(total)}€"},
+                    {"text": "IVA al 22%", "value": f"{totaleIva}€"},
+                    {"text": "TOTALE CON IVA", "value": f"{totaleFinale}€"},
+                ],
+                [f"NB: Qualsiasi modifica che non è citata, sarà pagata a parte."],
+            )
             log.AddLog(f"Prezzo totale: {totalString.get()}\n");
             log.AddLog(f"Stampato in {PdfName}");
+
+            if PdfName:
+                # Open the PDF file with the default PDF viewer
+                if platform.system() == "Windows":
+                    os.startfile(PdfName)
+                elif platform.system() == "Darwin":  # macOS
+                    os.system(f"open {PdfName}")
+                else:  # Linux
+                    os.system(f"xdg-open {PdfName}")
+
+            Button.config(text=f"Genera di nuovo", state=TK.NORMAL);
 
         case 2:
             log.End();
