@@ -7,7 +7,7 @@ from AlmaxLogs import LoggerService;
 import sys,os,platform;
 from tkinter import messagebox
 
-name = "PreventivoGenerator";
+name = "PreventivoFatturaGenerator";
 window = FM.Window(name);
 
 orders = [];
@@ -44,8 +44,9 @@ def AssignCommand(Button: TK.Button, index):
                     "Error", "Quantità e Prezzo accettano solo numeri!"
                 )
                 return
-            global window
-            global orders
+            global window;
+            global orders;
+            global docType;
 
             order = Order(
                 productName.get("1.0", TK.END).strip(),
@@ -95,6 +96,7 @@ def AssignCommand(Button: TK.Button, index):
                     {"text": "TOTALE CON IVA", "value": f"{totaleFinale}€"},
                 ],
                 [f"NB: Qualsiasi modifica che non è citata, sarà pagata a parte."],
+                docType.get()
             )
             log.AddLog(f"Prezzo totale: {totalString.get()}\n");
             log.AddLog(f"Stampato in {PdfName}");
@@ -119,6 +121,11 @@ def main():
     global productName; 
     global quantity; 
     global price;
+    global docType;
+
+    window.AddFrame("DocType", TK.NW);
+    window.AddLabelToFrame("Tipo di Documento", "DocType", TK.LEFT);
+    docType = window.AddOptionButtonToFrame(["Documento", "Preventivo", "Fattura"], "DocType", TK.LEFT);
 
     window.AddFrame("ClientName", TK.NW);
     window.AddLabelToFrame("Inserire il Cliente", "ClientName", TK.LEFT);
