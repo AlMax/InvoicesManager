@@ -8,7 +8,7 @@ from AlmaxLogs import LoggerService;
 import sys,os,platform;
 from tkinter import messagebox
 
-name = "PreventivoFatturaGenerator";
+name = "PreventivoFattura";
 window = FM.Window(name);
 
 orders = [];
