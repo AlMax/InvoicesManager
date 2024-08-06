@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.12
 from Classes.Order import Order;
 import AlmaxUtils.PdfManager as PM;
 import AlmaxGraphics.FrameManager as FM;
